@@ -3,8 +3,10 @@
 """
 Registration of Deadline Cloud Submitter Addon + activate logger
 """
+
 import logging
 import sys
+from typing import Any
 
 import bpy  # noqa
 from bpy.types import Operator
@@ -20,7 +22,7 @@ bl_info = {
     "name": "Deadline Cloud for Blender",
     "description": "Submit to AWS Deadline Cloud",
     "author": "AWS",
-    "version": (0, 6, 4),
+    "version": (0, 6, 6),
     "blender": (3, 6, 0),
     "category": "Render",
 }
@@ -30,7 +32,7 @@ logutil.add_file_handler()
 
 _logger = logging.getLogger(__name__)
 
-addon_keymaps = []
+addon_keymaps: list[tuple[Any, Any]] = []
 
 
 class DEADLINE_CLOUD_OT_open_dialog(Operator):
@@ -47,6 +49,7 @@ class DEADLINE_CLOUD_OT_open_dialog(Operator):
         See the bpy Operator docs: https://docs.blender.org/api/current/bpy.types.Operator.html
         """
         from qtpy import QtCore, QtWidgets
+        from deadline.client.exceptions import DeadlineOperationCanceled
         from .open_deadline_cloud_dialog import (
             create_deadline_dialog,
         )
@@ -69,6 +72,12 @@ class DEADLINE_CLOUD_OT_open_dialog(Operator):
         _logger.info("Initializing Deadline Cloud Blender Submitter UI")
         try:
             self.widget = create_deadline_dialog()
+        except DeadlineOperationCanceled as e:
+            # Raised by run_pre_gui_hooks when the user declines the pre-GUI hook confirmation.
+            # It is not a RuntimeError, so it must be caught separately; a decline is a clean
+            # cancel, not an error.
+            _logger.info("Submission canceled: %s", e)
+            return {"CANCELLED"}
         except RuntimeError as e:
             self.report({"ERROR"}, str(e))
             return {"CANCELLED"}

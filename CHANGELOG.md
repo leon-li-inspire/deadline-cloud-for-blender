@@ -1,3 +1,11 @@
+## 0.6.6 (2026-07-20)
+
+### Features
+* The Blender render submitter now runs pre-GUI hooks before opening the submission dialog, allowing studios to pre-populate dialog fields. Hooks are sourced from the DEADLINE_HOOKS_DIR environment variable, and the confirmation prompt is skipped when `auto_accept` is enabled in settings. (#370)
+## 0.6.5 (2026-06-22)
+
+### Features
+* The submitter now enables the deadline-cloud-v2 conda channel, allowing jobs to use packages from this channel when rendering on Deadline Cloud. `7ccbc75`
 ## 0.6.4 (2026-06-03)
 
 ### Features
